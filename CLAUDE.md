@@ -11,6 +11,7 @@
 - 모든 답변은 한국어로 한다.
 
 ## 작업 절차 (반드시 따를 것)
+0. 작업을 시작하기 전에 이슈와 작업 브랜치를 만든다 (아래 "이슈 기반 작업 흐름").
 1. 요청받은 기능을 구현한다.
 2. 새 기능/변경된 동작에 대한 테스트를 추가한다.
 3. 해당 프로젝트 CLAUDE.md의 테스트 명령으로 전체 테스트를 실행한다.
@@ -18,6 +19,44 @@
    - 테스트를 통과시키려고 테스트 자체를 지우거나 약하게 고치지 않는다. 테스트가 틀린 경우에만 고치고 그 이유를 설명한다.
 5. 작업 중 프로젝트 구조상 불편했던 점이 있었으면 GitHub 이슈로 발행한다 (아래 "불편 사항 이슈 발행").
 6. **커밋하지 않는다.** 커밋/푸시는 사용자가 명시적으로 요청할 때만 한다.
+
+## 이슈 기반 작업 흐름
+모든 작업은 GitHub 이슈(할 일 티켓)를 먼저 만들고 시작한다. Jira 티켓처럼 이슈 하나 = 작업 하나.
+
+1. 이슈 확인/생성
+   - 이미 해당 작업의 이슈가 있으면 그 이슈를 쓴다: `gh issue list --state open --search "<키워드>"`
+   - 없으면 만든다: `gh issue create --label backend --title "<할 일 한 줄 요약>" --body "<배경, 할 일, 완료 조건>"`
+   - 라벨: 프로젝트 라벨(`backend`/`frontend`) 필수. 버그면 `bug`, 기능이면 `enhancement`를 함께 붙인다.
+2. 이슈와 연결된 작업 브랜치를 dev에서 만든다:
+   ```bash
+   gh issue develop <이슈번호> --name <타입>/<이슈번호>-<짧은-설명> --base dev --checkout
+   ```
+3. 작업 → 테스트 → (요청 시) 커밋 → dev로 PR. PR 본문 "관련 이슈"에 `Closes #<이슈번호>`를 적는다.
+4. PR이 dev에 머지되면 이슈가 자동으로 닫힌다 (dev가 기본 브랜치이기 때문).
+
+## 브랜치 전략
+| 브랜치 | 역할 | 변경 방법 |
+|---|---|---|
+| `dev` | 기본 브랜치. 개발 중인 최신 코드 | 작업 브랜치의 PR 머지 (Rebase and merge) |
+| `main` | 릴리즈된 코드 | **dev → main PR로만** 변경 (Create a merge commit) |
+| 작업 브랜치 | 이슈 하나의 작업 | dev에서 생성, 작업 후 dev로 PR |
+
+- **main으로 직접 PR을 올리지 않는다.** 모든 작업 PR의 base는 `dev`다.
+  - 저장소 ruleset "main: dev에서만 머지"와 `.github/workflows/main-only-from-dev.yml` 검사가 이를 강제한다.
+- **dev, main에 직접 push하지 않는다.** 두 브랜치 모두 PR로만 변경할 수 있다 (ruleset "dev: PR로만 변경", "main: dev에서만 머지"). 삭제와 force push도 막혀 있다.
+- 릴리즈: 사용자가 요청할 때만 dev → main PR을 만든다. 머지 커밋 제목은 `release: v<버전>`, 내용에 포함된 PR 목록을 적는다.
+
+### 작업 브랜치 이름: `<타입>/<이슈번호>-<짧은-설명>`
+```
+feat/12-seat-reservation
+fix/15-duplicate-booking
+refactor/20-movie-service
+chore/5-test-db-setup
+```
+- **타입**: 커밋 타입과 같은 단어 (`feat`, `fix`, `refactor`, `test`, `docs`, `chore`)
+- **이슈번호**: 작업의 근거가 되는 GitHub 이슈 번호 (필수)
+- **짧은 설명**: 영어 소문자, 단어는 `-`로 연결, 2~4단어
+- backend/frontend 구분은 브랜치 이름에 넣지 않는다 (이슈/PR 라벨로 구분).
 
 ## 불편 사항 이슈 발행
 작업하면서 에이전트(Claude)가 **이 프로젝트의 구조·개발 방식** 때문에 불편함을 느낄 때마다 GitHub 이슈로 남긴다.
@@ -97,8 +136,8 @@ feat(movie): 영화 등록/목록 조회 API 추가
 - 루트 파일 변경
   - 한쪽만을 위한 변경 (예: backend용 `compose.yaml` 수정) → 그쪽 PR에 넣는다.
   - 양쪽 공통 변경 (이 `CLAUDE.md`, 공통 `.gitignore` 규칙 등) → 별도 PR로 올린다.
-- PR 생성 전 `git diff --stat main...HEAD`로 다른 프로젝트 폴더가 섞이지 않았는지 확인한다.
-- PR에는 해당 프로젝트 라벨(`backend` 또는 `frontend`)을 붙인다 (`gh pr create --label backend`). 공통 PR은 둘 다 붙인다.
+- PR 생성 전 `git diff --stat dev...HEAD`로 다른 프로젝트 폴더가 섞이지 않았는지 확인한다.
+- PR에는 해당 프로젝트 라벨(`backend` 또는 `frontend`)을 붙인다 (`gh pr create --base dev --label backend`). 공통 PR은 둘 다 붙인다.
 - PR 본문에 `🤖 Generated with [Claude Code](...)` 등 AI 생성 표시를 넣지 않는다.
 
 ### PR 본문 형식
