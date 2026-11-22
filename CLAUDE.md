@@ -42,8 +42,8 @@
 | 작업 브랜치 | 이슈 하나의 작업 | dev에서 생성, 작업 후 dev로 PR |
 
 - **main으로 직접 PR을 올리지 않는다.** 모든 작업 PR의 base는 `dev`다.
-  - 저장소 ruleset "main: dev에서만 머지"와 `.github/workflows/main-only-from-dev.yml` 검사가 이를 강제한다.
-- **dev, main에 직접 push하지 않는다.** 두 브랜치 모두 PR로만 변경할 수 있다 (ruleset "dev: PR로만 변경", "main: dev에서만 머지"). 삭제와 force push도 막혀 있다.
+  - 저장소 설정으로 강제되지 않는 규칙이므로, PR 생성 시 base가 `dev`인지 반드시 확인한다.
+- **dev, main에 직접 push하지 않는다.** 두 브랜치 모두 PR로만 변경할 수 있다 (ruleset "dev: PR로만 변경", "main: PR로만 변경"). 삭제와 force push도 막혀 있다.
 - 릴리즈: 사용자가 요청할 때만 dev → main PR을 만든다. 머지 커밋 제목은 `release: v<버전>`, 내용에 포함된 PR 목록을 적는다.
 
 ### 작업 브랜치 이름: `<타입>/<이슈번호>-<짧은-설명>`
