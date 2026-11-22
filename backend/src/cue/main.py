@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from sqlalchemy import text
 
 from cue.db import Base, Session, engine
+from cue.movie.router import router as movie_router
 
 
 @asynccontextmanager
@@ -15,6 +16,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="cue", lifespan=lifespan)
+app.include_router(movie_router)
 
 
 @app.get("/health")
