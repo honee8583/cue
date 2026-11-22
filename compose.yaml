@@ -1,0 +1,16 @@
+name: cue
+
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: cue-api
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: cue
+    ports:
+      - '5433:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
